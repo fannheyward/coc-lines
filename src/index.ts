@@ -1,27 +1,30 @@
-import { VimCompleteItem, workspace, CompleteResult, ExtensionContext, sources } from 'coc.nvim';
+import { CompleteOption, CompleteResult, ExtensionContext, sources, VimCompleteItem, workspace } from 'coc.nvim';
 
 export async function activate(context: ExtensionContext): Promise<void> {
-  const lineResult = <CompleteResult>{};
-
+  const shortcut = workspace.getConfiguration('coc.source.lines').get('shortcut', '');
   context.subscriptions.push(
-    workspace.onDidOpenTextDocument(async _e => {
-      const doc = await workspace.document;
-      const items: VimCompleteItem[] = [];
-      doc.getLines(0, doc.lineCount).forEach(word => {
-        items.push({ word });
-      });
-      lineResult.items = items;
-    }),
-
     sources.createSource({
-      name: 'lines', // unique id
-      shortcut: '[Lines]', // [CS] is custom source
-      priority: 1,
-      triggerPatterns: [], // RegExp pattern
-      doComplete: async () => {
-        return lineResult;
+      name: 'lines',
+      doComplete: async (opt: CompleteOption) => {
+        const doc = await workspace.document;
+        if (!doc || (opt && doc && opt.bufnr != doc.bufnr)) {
+          return null;
+        }
+
+        const items: VimCompleteItem[] = [];
+        const lines = await doc.buffer.lines;
+        for (const line of lines) {
+          if (!line || line.length === 0) {
+            continue;
+          }
+
+          items.push({ word: line, menu: `[${shortcut}]` });
+        }
+
+        return new Promise<CompleteResult>(resolve => {
+          resolve({ items });
+        });
       }
     })
   );
 }
-

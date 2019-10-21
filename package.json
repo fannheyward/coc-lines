@@ -1,6 +1,6 @@
 {
   "name": "coc-lines",
-  "version": "0.0.0-development",
+  "version": "0.1.0",
   "description": "",
   "author": "Heyward Fann <fannheyward@gmail.com>",
   "license": "MIT",
@@ -26,23 +26,43 @@
     "webpack": "^4.39.2",
     "webpack-cli": "^3.3.6"
   },
+  "activationEvents": [
+    "*"
+  ],
   "contributes": {
     "configuration": {
       "type": "object",
-      "title": "coc-lines configuration",
       "properties": {
-        "coc-lines.enabled": {
+        "coc.source.lines.enable": {
           "type": "boolean",
-          "default": true,
-          "description": "Enable coc-lines extension"
+          "default": true
+        },
+        "coc.source.lines.shortcut": {
+          "type": "string",
+          "default": "LN"
+        },
+        "coc.source.lines.disableSyntaxes": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "type": "string"
+          }
+        },
+        "coc.source.lines.priority": {
+          "type": "integer",
+          "default": 0
+        },
+        "coc.source.lins.filetypes": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "default": null,
+          "items": {
+            "type": "string"
+          }
         }
       }
-    },
-    "commands": [
-      {
-        "command": "coc-lines.Command",
-        "title": "coc-lines command title"
-      }
-    ]
+    }
   }
 }
