@@ -18,7 +18,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
             continue;
           }
 
-          items.push({ word: line, menu: `[${shortcut}]` });
+          items.push({ word: line.trim(), menu: `[${shortcut}]` });
         }
 
         return new Promise<CompleteResult>(resolve => {
