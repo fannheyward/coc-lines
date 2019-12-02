@@ -7,8 +7,8 @@ export async function activate(context: ExtensionContext): Promise<void> {
       name: 'lines',
       doComplete: async (opt: CompleteOption) => {
         const doc = await workspace.document;
-        if (!doc || (opt && doc && opt.bufnr != doc.bufnr)) {
-          return null;
+        if (!doc || opt.bufnr != doc.bufnr || opt.col > 0) {
+          return;
         }
 
         const items: VimCompleteItem[] = [];
