@@ -10,7 +10,7 @@ import {
   Neovim,
   sources,
   VimCompleteItem,
-  workspace
+  workspace,
 } from 'coc.nvim';
 import { Position } from 'vscode-languageserver-protocol';
 
@@ -29,7 +29,7 @@ class LineList extends BasicList {
   constructor(nvim: Neovim) {
     super(nvim);
 
-    this.addAction('jump', async item => {
+    this.addAction('jump', async (item) => {
       const location = item.location as LocationWithLine;
       await workspace.moveTo(Position.create(parseInt(location.line), 0));
     });
@@ -53,7 +53,7 @@ class LineList extends BasicList {
       const location: LocationWithLine = { uri: doc.uri, line: (lnum - 1).toString() };
       result.push({
         label: `${pre} ${line}`,
-        location
+        location,
       });
     }
     return result;
@@ -61,15 +61,21 @@ class LineList extends BasicList {
 }
 
 export async function activate(context: ExtensionContext): Promise<void> {
-  const shortcut = workspace.getConfiguration('coc.source.lines').get('shortcut', '');
+  const config = workspace.getConfiguration('coc.source.lines');
+  const shortcut = config.get('shortcut') as string;
   context.subscriptions.push(
     listManager.registerList(new LineList(workspace.nvim)),
 
     sources.createSource({
       name: 'lines',
       doComplete: async (opt: CompleteOption) => {
+        const startOfLineOnly = config.get('startOfLineOnly') as boolean;
+        if (startOfLineOnly && opt.col > 0) {
+          return;
+        }
+
         const doc = await workspace.document;
-        if (!doc || opt.bufnr != doc.bufnr || opt.col > 0) {
+        if (!doc || opt.bufnr != doc.bufnr) {
           return;
         }
 
@@ -83,10 +89,10 @@ export async function activate(context: ExtensionContext): Promise<void> {
           items.push({ word: line.trim(), menu: `[${shortcut}]` });
         }
 
-        return new Promise<CompleteResult>(resolve => {
+        return new Promise<CompleteResult>((resolve) => {
           resolve({ items });
         });
-      }
+      },
     })
   );
 }

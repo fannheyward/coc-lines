@@ -57,6 +57,11 @@
           "type": "integer",
           "default": 0
         },
+        "coc.source.lines.startOfLineOnly": {
+          "type": "boolean",
+          "default": true,
+          "description": "Suggest completion items at start of line only"
+        },
         "coc.source.lines.filetypes": {
           "type": [
             "array",
