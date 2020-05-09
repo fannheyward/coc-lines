@@ -57,7 +57,7 @@
           "type": "integer",
           "default": 0
         },
-        "coc.source.lins.filetypes": {
+        "coc.source.lines.filetypes": {
           "type": [
             "array",
             "null"
