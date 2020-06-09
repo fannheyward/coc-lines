@@ -2,6 +2,7 @@ import {
   BasicList,
   CompleteOption,
   CompleteResult,
+  Document,
   ExtensionContext,
   ListContext,
   ListItem,
@@ -60,38 +61,50 @@ class LineList extends BasicList {
   }
 }
 
-export async function activate(context: ExtensionContext): Promise<void> {
+async function getCompletionResult(opt: CompleteOption): Promise<CompleteResult | undefined> {
   const config = workspace.getConfiguration('coc.source.lines');
   const shortcut = config.get('shortcut') as string;
+  const startOfLineOnly = config.get('startOfLineOnly') as boolean;
+  if (startOfLineOnly && opt.col > 0) {
+    return;
+  }
+
+  let docs: Document[] = [];
+  const allBuffers = config.get('fromAllBuffers') as boolean;
+  if (allBuffers) {
+    docs = workspace.documents;
+  } else {
+    const doc = await workspace.document;
+    if (doc && doc.bufnr === opt.bufnr) {
+      docs.push(doc);
+    }
+  }
+
+  const items: VimCompleteItem[] = [];
+  for (const doc of docs) {
+    const lines = await doc.buffer.lines;
+    for (const line of lines) {
+      if (!line || line.length === 0) {
+        continue;
+      }
+
+      items.push({ word: line.trim(), menu: `[${shortcut}]` });
+    }
+  }
+
+  return new Promise<CompleteResult>((resolve) => {
+    resolve({ items });
+  });
+}
+
+export async function activate(context: ExtensionContext): Promise<void> {
   context.subscriptions.push(
     listManager.registerList(new LineList(workspace.nvim)),
 
     sources.createSource({
       name: 'lines',
       doComplete: async (opt: CompleteOption) => {
-        const startOfLineOnly = config.get('startOfLineOnly') as boolean;
-        if (startOfLineOnly && opt.col > 0) {
-          return;
-        }
-
-        const doc = await workspace.document;
-        if (!doc || opt.bufnr != doc.bufnr) {
-          return;
-        }
-
-        const items: VimCompleteItem[] = [];
-        const lines = await doc.buffer.lines;
-        for (const line of lines) {
-          if (!line || line.length === 0) {
-            continue;
-          }
-
-          items.push({ word: line.trim(), menu: `[${shortcut}]` });
-        }
-
-        return new Promise<CompleteResult>((resolve) => {
-          resolve({ items });
-        });
+        return await getCompletionResult(opt);
       },
     })
   );

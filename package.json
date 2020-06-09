@@ -62,6 +62,11 @@
           "default": true,
           "description": "Suggest completion items at start of line only"
         },
+        "coc.source.lines.fromAllBuffers": {
+          "type": "boolean",
+          "default": false,
+          "description": "Suggest completion items from all opened buffers currently"
+        },
         "coc.source.lines.filetypes": {
           "type": [
             "array",
