@@ -9,11 +9,12 @@ import {
   listManager,
   LocationWithLine,
   Neovim,
+  Position,
   sources,
   VimCompleteItem,
+  window,
   workspace,
 } from 'coc.nvim';
-import { Position } from 'vscode-languageserver-protocol';
 
 function pad(n: string, total: number): string {
   let l = total - n.length;
@@ -32,7 +33,7 @@ class LineList extends BasicList {
 
     this.addAction('jump', async (item) => {
       const location = item.location as LocationWithLine;
-      await workspace.moveTo(Position.create(parseInt(location.line), 0));
+      await window.moveTo(Position.create(parseInt(location.line), 0));
     });
   }
 
@@ -51,7 +52,10 @@ class LineList extends BasicList {
     for (let line of lines) {
       lnum = lnum + 1;
       let pre = `${lnum}${pad(lnum.toString(), total)}`;
-      const location: LocationWithLine = { uri: doc.uri, line: (lnum - 1).toString() };
+      const location: LocationWithLine = {
+        uri: doc.uri,
+        line: (lnum - 1).toString(),
+      };
       result.push({
         label: `${pre} ${line}`,
         location,
@@ -72,7 +76,7 @@ async function getCompletionResult(opt: CompleteOption): Promise<CompleteResult 
   let docs: Document[] = [];
   const allBuffers = config.get('fromAllBuffers') as boolean;
   if (allBuffers) {
-    docs = workspace.documents;
+    docs = [...workspace.documents];
   } else {
     const doc = await workspace.document;
     if (doc && doc.bufnr === opt.bufnr) {
